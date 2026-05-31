@@ -41,7 +41,7 @@ class App(ctk.CTk):
     # PESTAÑA DE INICIO
     # ========================================================
 
-    def pest_inico(self):
+    def crear_inicio(self):
         titulo = ctk.CTkLabel(
             self.tab_inicio,
             text="Projecto Limites",
@@ -65,6 +65,7 @@ se desarrollo esta aplicacion esta diseñada para :
         caja.insert("1.0", texto)
         caja.configure(state="disabled")
 
+
     # ========================================================
     # FUNCIÓN AUXILIAR PARA CREAR FIGURAS DE MATPLOTLIB
     # ========================================================
@@ -79,4 +80,38 @@ se desarrollo esta aplicacion esta diseñada para :
         canvas = FigureCanvasTkAgg(figura, master=frame)
         canvas.get_tk_widget().pack(fill="both", expand=True)
         return figura, eje, canvas
-    
+
+
+
+    def crear_limite(self):
+        contenedor = ctk.CTkFrame(self.tab_limite)
+        contenedor.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        menu_datos = ctk.CTkFrame(contenedor, width=200, height=200)
+        menu_datos.pack(side= "bottom", fill="both", padx=10, pady= 10)
+        
+        grafica = ctk.CTkFrame(contenedor)
+        grafica.pack(side="top", fill="both", expand= True)
+
+        ctk.CTkLabel(menu_datos, "Limites", font=("Arial", 30, "bold") )
+        
+        ctk.CTkLabel(menu_datos, text="x --> ").pack()
+        self.c_h = ctk.CTkEntry(menu_datos, placeholder_text="Ej: x --> 0")
+        self.c_h.pack(pady=5)
+
+        ctk.CTkLabel(menu_datos, text="f(x):").pack()
+        self.c_k = ctk.CTkEntry(menu_datos, placeholder_text="Ej: x**2 - 4")
+        self.c_k.pack(pady=5)
+
+
+        ctk.CTkButton(
+            menu_datos,
+            text="Graficar y explicar",
+            command=self.graficar_circunferencia
+        ).pack(pady=20)
+
+    def mostrar_texto(self, caja, texto):
+        caja.configure(state="normal")
+        caja.delete("1.0", "end")
+        caja.insert("1.0", texto)
+        caja.configure(state="disabled")
