@@ -81,7 +81,9 @@ se desarrollo esta aplicacion esta diseñada para :
         canvas.get_tk_widget().pack(fill="both", expand=True)
         return figura, eje, canvas
 
-
+#======================================
+#LIMITE
+#======================================
 
     def crear_limite(self):
         contenedor = ctk.CTkFrame(self.tab_limite)
@@ -115,3 +117,21 @@ se desarrollo esta aplicacion esta diseñada para :
         caja.delete("1.0", "end")
         caja.insert("1.0", texto)
         caja.configure(state="disabled")
+
+#======================================
+#LIMITE LATERAL
+#======================================
+
+    def crear_LimLateral(self):
+        contenedor = ctk.CTkFrame(self.tab_lateral)
+        contenedor.pack(fill="both", expand=True, padx=10, pady=10)
+
+        panel = ctk.CTkFrame(contenedor, width=340)
+        panel.pack(side="left", fill="y", padx=10, pady=10)
+
+
+
+
+#======================================
+#LIMITE INFINITO
+#======================================
