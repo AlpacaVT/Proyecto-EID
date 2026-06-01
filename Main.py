@@ -107,7 +107,7 @@ se desarrollo esta aplicacion esta diseñada para :
         ctk.CTkButton(
             menu_datos,
             text="Graficar y explicar",
-            command=self.graficar_circunferencia
+            command=self.graficar_limite
         ).pack(pady=20)
 
     def mostrar_texto(self, caja, texto):
