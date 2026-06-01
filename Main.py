@@ -81,7 +81,9 @@ se desarrollo esta aplicacion esta diseñada para :
         canvas.get_tk_widget().pack(fill="both", expand=True)
         return figura, eje, canvas
 
-
+#======================================
+#LIMITE
+#======================================
 
     def crear_limite(self):
         contenedor = ctk.CTkFrame(self.tab_limite)
@@ -115,3 +117,48 @@ se desarrollo esta aplicacion esta diseñada para :
         caja.delete("1.0", "end")
         caja.insert("1.0", texto)
         caja.configure(state="disabled")
+
+#======================================
+#LIMITE LATERAL
+#======================================
+
+    def crear_lateral(self):
+        contenedor = ctk.CTkFrame(self.tab_lateral)
+        contenedor.pack(fill="both", expand=True, padx=10, pady=10)
+
+        panel = ctk.CTkFrame(contenedor, width=340)
+        panel.pack(side="left", fill="y", padx=10, pady=10)
+
+        grafico = ctk.CTkFrame(contenedor)
+        grafico.pack(side="right", fill="both", expand=True, padx=10, pady=10)
+
+        ctk.CTkLabel(panel, text="Limite Lateral", font=("Arial", 24, "bold")).pack(pady=15)
+
+        ctk.CTkLabel(panel, text="Funcion f(x):").pack()
+        self.lat_fx = ctk.CTkEntry(panel, placeholder_text="Ej: x**2 + 4")
+        self.lat_fx.pack(pady=5)
+
+        ctk.CTkLabel(panel, text="Valor de h(x-->h)").pack()
+        self.lat_h = ctk.CTkEntry(panel, placeholder_text="Ej: 4")
+        self.lat_h.pack(pady=5)
+
+        ctk.CTkButton(
+            panel,
+            text="Graficar y explicar",
+            command=self.graficar_lateral
+        ).pack(pady=20)
+
+        self.resultado_lateral = ctk.CTkTextbox(panel, width=310, height=350)
+        self.resultado_lateral.pack(pady=10)
+
+        self.fig_lat, self.ax_lat, self.canvas_lat = self.crea_grafico(grafico)
+
+
+    def graficar_lateral(self):
+        fX = self.lat_fx.get()
+        h = float(self.lat_h.get())
+
+        
+#======================================
+#LIMITE INFINITO
+#======================================
