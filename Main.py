@@ -207,7 +207,7 @@ se desarrollo esta aplicacion esta diseñada para :
         caja.configure(state="disabled")
 
 #======================================
-#LIMITE LATERAL
+#LIMITE LATERAL head
 #======================================
 
     def crear_lateral(self):
