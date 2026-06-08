@@ -34,8 +34,8 @@ class App(ctk.CTk):
         # Llamamos a los métodos que construyen cada pestaña.
         self.crear_inicio()
         self.crear_limite()
-        # self.crear_lateral()
-        # self.crear_infinito()
+        self.crear_lateral()
+        self.crear_infinito()
 
     # ========================================================
     # PESTAÑA DE INICIO
@@ -50,12 +50,14 @@ class App(ctk.CTk):
         titulo.pack(pady=25)
 
         texto = """
+
 Usando conocimientos de librerias como matplotlib y otras librerias nuevas como customtkinter y sympy
 se desarrollo esta aplicacion esta diseñada para :
 - ingresar una función
 - calcular límite
 - graficar la función
 - mostrar desarrollo paso a paso
+
 """
 
         caja = ctk.CTkTextbox(self.tab_inicio, width=900, height=350, font=("Arial", 16))
@@ -67,22 +69,21 @@ se desarrollo esta aplicacion esta diseñada para :
     # ========================================================
     # FUNCIÓN AUXILIAR PARA CREAR FIGURAS DE MATPLOTLIB
     # ========================================================
+    # Esta función evita repetir código.
+    # Crea una figura, un eje y un canvas para incrustar
+    # el gráfico dentro de un frame de CustomTkinter.
+    # ========================================================
 
     def crea_grafico(self, frame):
         figura = Figure(figsize=(6, 5), dpi=100)
-        
-        figura.patch.set_facecolor('#242424')
         eje = figura.add_subplot(111)
-        eje.set_facecolor('#1a1a1a')          
-        eje.tick_params(colors='white')
-        
         canvas = FigureCanvasTkAgg(figura, master=frame)
         canvas.get_tk_widget().pack(fill="both", expand=True)
         return figura, eje, canvas
 
-    #======================================
-    # LIMITE
-    #======================================
+#======================================
+#LIMITE
+#======================================
 
     def crear_limite(self):
         contenedor = ctk.CTkFrame(self.tab_limite)
@@ -213,11 +214,11 @@ se desarrollo esta aplicacion esta diseñada para :
         contenedor = ctk.CTkFrame(self.tab_lateral)
         contenedor.pack(fill="both", expand=True, padx=10, pady=10)
 
-        panel = ctk.CTkFrame(contenedor, width=340)
-        panel.pack(side="left", fill="y", padx=10, pady=10)
+        panel = ctk.CTkFrame(contenedor)
+        panel.pack(side="bottom", fill="x", padx=10, pady=10)
 
         grafico = ctk.CTkFrame(contenedor)
-        grafico.pack(side="right", fill="both", expand=True, padx=10, pady=10)
+        grafico.pack(side="top", fill="both", expand=True, padx=10, pady=10)
 
         ctk.CTkLabel(panel, text="Limite Lateral", font=("Arial", 24, "bold")).pack(pady=15)
 
@@ -242,10 +243,43 @@ se desarrollo esta aplicacion esta diseñada para :
 
 
     def graficar_lateral(self):
-        fX = self.lat_fx.get()
-        h = float(self.lat_h.get())
+        try:
+            fx = self.lat_fx.get() #lee lo que el usuario coloca en fx
+            h = self.lat_h.get() #lee lo que el usuario coloca en h
 
-        
+            # Evita que no se ingrese nada
+            if not h or not fx: #verifica si esta vacia h y fx
+                self.resultado_lateral.delete("1.0", "end") #borra todo lo que hay escrito antes
+                self.resultado_lateral.insert("1.0", "Ingresa los datos.") #escribe el texto nuevo desde el principio
+                return
+            # el "1.0" se usa para escribir texto al principio
+            x = sp.Symbol('x') #convierte a x en una variable matematica
+            expr = sp.sympify(fx) #convierte el texto fx en una expresion
+            evaluacion_fx = expr.subs(x, sp.sympify(h)) #evaluacion de la funcion para saber si calcular los laterales
+            lim_izq = sp.limit(expr, x, h, '-') #calcular limite cuando se hacerque por -
+            lim_der = sp.limit(expr, x, h, '+') #calcular limite cuando se hacerque por +
+            h_num = float(sp.sympify(h))
+
+            try: # es número normal, el límite existe
+                verifi = float(evaluacion_fx) #verificador de indeterminacion(la indeterminacion no puede ser float)
+                self.resultado_lateral.delete("1.0", "end")
+                self.resultado_lateral.insert("1.0", "el limite se encuentra en: " + str(evaluacion_fx))
+
+            except: #hay indeterminación o división por cero, calcular laterales
+                if lim_der == lim_izq: # verifica si los limites laterales son iguales
+                    self.resultado_lateral.delete("1.0", "end")
+                    self.resultado_lateral.insert("1.0", "el limite se encuentra en: " + str(lim_der))
+                    # si los laterales son iguales es igual existe en el numero lim_der(ya que son iguales no hay problema)
+
+                else: #si los limites laterales no son iguales
+                    self.resultado_lateral.delete("1.0", "end")
+                    self.resultado_lateral.insert("1.0", "el limite no existe")
+                    self.resultado_lateral.insert("end", "\nlimite por la derecha: " + str(lim_der))
+                    self.resultado_lateral.insert("end", "\nlimite por la izquierda: " + str(lim_izq))
+                    # "end" al principio se usa para agregar al final
+        except Exception as error:
+            self.resultado_lateral.delete("1.0", "end")
+            self.resultado_lateral.insert("1.0", "Error en los datos ingresados:\n" + str(error))
 #======================================
 #LIMITE INFINITO
 #======================================
