@@ -245,7 +245,6 @@ se desarrollo esta aplicacion esta diseñada para :
         fX = self.lat_fx.get()
         h = float(self.lat_h.get())
 
-        
 #======================================
 #LIMITE INFINITO
 #======================================
