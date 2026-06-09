@@ -316,61 +316,61 @@ se desarrollo esta aplicacion esta diseñada para :
             command=self.graficar_infinito
         ).pack(pady=10)
 
-        def graficar_infinito(self):
-            try:
-                # Captura de datos desde la interfaz
-                tendencia = self.x_inf.get() #Rescata el texto de la tendencia (oo o -oo)
-                funcion = self.fx_inf.get() #rescata el string de la funcion ingresada
+    def graficar_infinito(self):
+        try:
+            # Captura de datos desde la interfaz
+            tendencia = self.x_inf.get() #Rescata el texto de la tendencia (oo o -oo)
+            funcion = self.fx_inf.get() #rescata el string de la funcion ingresada
 
-                #Validacion de datos incompletos 
-                if not tendencia or not funcion: 
-                    self.mostrar_texto(self.caja_explicacion_inf, "ingresa los datos.")
-                    return #corta la ejecucion si falta alfun dato
-                x = sp.symbols('x')#Define 'x' como la variable simbolica pra el calculo
+            #Validacion de datos incompletos 
+            if not tendencia or not funcion: 
+                self.mostrar_texto(self.caja_explicacion_inf, "ingresa los datos.")
+                return #corta la ejecucion si falta alfun dato
+            x = sp.symbols('x')#Define 'x' como la variable simbolica pra el calculo
 
-                #traducimos la entrada de texto al objeto infinito de SymPy
-                if tendencia == "oo":
-                    tendencia_trad = sp.oo #asigna el objeto de infinito poitivo "es una dolbe 'o'"
-                elif tendencia == "-oo":
-                    tendencia_trad = -sp.oo # se asigna el mismo objeto pero con un "-" antes
-                else: 
-                    #si el usuario escribe cyalquier otra cosa, avisa del error y detiene el proceso
-                    self.mostrar_texto(self.caja_explicacion_inf, "Para infinito usa exactamente 'oo' o '-oo'.")
-                    return
-                fx = sp.sympify(funcion) #traduce el string de la funcion a una exprecion matematica
-                resultado = sp.limit(fx, x, tendencia_trad) # calcula el limite exacto
+            #traducimos la entrada de texto al objeto infinito de SymPy
+            if tendencia == "oo":
+                tendencia_trad = sp.oo #asigna el objeto de infinito poitivo "es una dolbe 'o'"
+            elif tendencia == "-oo":
+                tendencia_trad = -sp.oo # se asigna el mismo objeto pero con un "-" antes
+            else: 
+                #si el usuario escribe cyalquier otra cosa, avisa del error y detiene el proceso
+                self.mostrar_texto(self.caja_explicacion_inf, "Para infinito usa exactamente 'oo' o '-oo'.")
+                return
+            fx = sp.sympify(funcion) #traduce el string de la funcion a una exprecion matematica
+            resultado = sp.limit(fx, x, tendencia_trad) # calcula el limite exacto
 
-                # Graficamos un rango amplio fijo (de -50 a 50) para apreciar el comportamiento asintotico 
-                puntos_x = []
-                puntos_y = []
-                for i in range(-50,51):
-                    try:
-                        valor_y = float(fx.subs(x, i).evalf()) # Remplaza 'x' por el valor de 'i' y lo evalua decimal
-                        if abs(valor_y) < 100: #acota los valores para evitar desbordes por asintotas verticales 
-                            puntos_x.append(i) #guarda el valor en x si pasa el flitro
-                            puntos_y.append(valor_y) #guarda el valor calculado de y
-                    except:
-                        continue # si hay una division por cero en ese punto, ignora el error y salta al siguiente 
-                    # Renderiza el grafico en matplotlib
-                self.eje_inf.clear()
-                self.eje_inf.plot(puntos_x, puntos_y, label=f"f(x) = {funcion}", color="#1500ff",linewidth=2) # Dibuja la curva principar de la funcion uniendo los puntos con una linea azul
+            # Graficamos un rango amplio fijo (de -50 a 50) para apreciar el comportamiento asintotico 
+            puntos_x = []
+            puntos_y = []
+            for i in range(-50,51):
+                try:
+                    valor_y = float(fx.subs(x, i).evalf()) # Remplaza 'x' por el valor de 'i' y lo evalua decimal
+                    if abs(valor_y) < 100: #acota los valores para evitar desbordes por asintotas verticales 
+                        puntos_x.append(i) #guarda el valor en x si pasa el flitro
+                        puntos_y.append(valor_y) #guarda el valor calculado de y
+                except:
+                    continue # si hay una division por cero en ese punto, ignora el error y salta al siguiente 
+                # Renderiza el grafico en matplotlib
+            self.eje_inf.clear()
+            self.eje_inf.plot(puntos_x, puntos_y, label=f"f(x) = {funcion}", color="#1500ff",linewidth=2) # Dibuja la curva principar de la funcion uniendo los puntos con una linea azul
 
-                # si el limite da un numero estable, se dibuja la asintota horizontal
-                if resultado.is_number:
-                    asintota = float(resultado.evalf()) #convierte el resultado del el limite a un valor decimal flotante 
-                    self.eje_inf.axhline(asintota, color='red', linestyle=':', label=f"Asintota y = {resultado}") # traza una linea horiontal punteada de color rojo en el valor donde convegue la funcion
+            # si el limite da un numero estable, se dibuja la asintota horizontal
+            if resultado.is_number:
+                asintota = float(resultado.evalf()) #convierte el resultado del el limite a un valor decimal flotante 
+                self.eje_inf.axhline(asintota, color='red', linestyle=':', label=f"Asintota y = {resultado}") # traza una linea horiontal punteada de color rojo en el valor donde convegue la funcion
 
-                self.eje_inf.axhline(0, color='white', linewidth=0.5) #dibuja el eje x
-                self.eje_inf.axvline(0, color='white', linewidth=0.5) #dibuja el eje y
-                self.eje_inf.grid(True, linestyle=':', color='gray', alpha=0.5)# activa una cuadricula gris 
-                self.eje_inf.legend(loc="upper right") #coloca el cuadro de etiquetas/leyendas arriba a la derecha 
-                self.canvas_inf.draw() #refresca fisicamente el liezo de la interfaz grafica
+            self.eje_inf.axhline(0, color='white', linewidth=0.5) #dibuja el eje x
+            self.eje_inf.axvline(0, color='white', linewidth=0.5) #dibuja el eje y
+            self.eje_inf.grid(True, linestyle=':', color='gray', alpha=0.5)# activa una cuadricula gris 
+            self.eje_inf.legend(loc="upper right") #coloca el cuadro de etiquetas/leyendas arriba a la derecha 
+            self.canvas_inf.draw() #refresca fisicamente el liezo de la interfaz grafica
             
-                #envia el resultado textual de la operacion limpia a la caja de texto
-                self.mostrar_texto(self.caja_explicacion_inf, f"Analizando comportamiento en tendencias extremas hacia {tendencia}. \nResultado del limite:{resultado}")
-            except Exception as error:
-                #si el usuario ingresa un error de sintaxisa se captura la exepcion y la muestra 
-                self.mostrar_texto(self.caja_explicacion_inf, f"Error:\n{str(error)}")
+            #envia el resultado textual de la operacion limpia a la caja de texto
+            self.mostrar_texto(self.caja_explicacion_inf, f"Analizando comportamiento en tendencias extremas hacia {tendencia}. \nResultado del limite:{resultado}")
+        except Exception as error:
+            #si el usuario ingresa un error de sintaxisa se captura la exepcion y la muestra 
+            self.mostrar_texto(self.caja_explicacion_inf, f"Error:\n{str(error)}")
 
 
         
