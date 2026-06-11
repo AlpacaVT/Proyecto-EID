@@ -199,7 +199,10 @@ se desarrollo esta aplicacion esta diseñada para :
         except Exception as error:
             self.mostrar_texto(self.caja_explicacion, f"Error en los datos ingresados:\n{str(error)}")
 
-
+#======================================
+# FUNCION AUXILIAR
+# para mostrar Texto personalizado para los limites
+#======================================
     def mostrar_texto(self, caja, texto):
         caja.configure(state="normal")
         caja.delete("1.0", "end")
@@ -212,7 +215,7 @@ se desarrollo esta aplicacion esta diseñada para :
 
     def crear_lateral(self):
         contenedor = ctk.CTkFrame(self.tab_lateral)
-        contenedor.pack(fill="both", expand=True, padx=10, pady=10)
+        contenedor.pack(fill="both", expand=True)
 
         panel = ctk.CTkFrame(contenedor)
         panel.pack(side="bottom", fill="x", padx=10, pady=10)
@@ -220,7 +223,7 @@ se desarrollo esta aplicacion esta diseñada para :
         grafico = ctk.CTkFrame(contenedor)
         grafico.pack(side="top", fill="both", expand=True, padx=10, pady=10)
 
-        ctk.CTkLabel(panel, text="Limite Lateral", font=("Arial", 24, "bold")).pack(pady=15)
+        ctk.CTkLabel(panel, text="Limite Lateral", font=("Arial", 22, "bold")).pack(pady=5)
 
         ctk.CTkLabel(panel, text="Funcion f(x):").pack()
         self.lat_fx = ctk.CTkEntry(panel, placeholder_text="Ej: x**2 + 4")
@@ -236,7 +239,7 @@ se desarrollo esta aplicacion esta diseñada para :
             command=self.graficar_lateral
         ).pack(pady=20)
 
-        self.resultado_lateral = ctk.CTkTextbox(panel, width=310, height=350)
+        self.resultado_lateral = ctk.CTkTextbox(panel, width=500, height=105, state="disabled")
         self.resultado_lateral.pack(pady=10)
 
         self.fig_lat, self.ax_lat, self.canvas_lat = self.crea_grafico(grafico)
@@ -247,39 +250,191 @@ se desarrollo esta aplicacion esta diseñada para :
             fx = self.lat_fx.get() #lee lo que el usuario coloca en fx
             h = self.lat_h.get() #lee lo que el usuario coloca en h
 
-            # Evita que no se ingrese nada
+            #Evita que no se ingrese nada
             if not h or not fx: #verifica si esta vacia h y fx
-                self.resultado_lateral.delete("1.0", "end") #borra todo lo que hay escrito antes
-                self.resultado_lateral.insert("1.0", "Ingresa los datos.") #escribe el texto nuevo desde el principio
+                self.mostrar_texto(self.resultado_lateral, "Ingresa los datos.")
                 return
-            # el "1.0" se usa para escribir texto al principio
+            #el "1.0" se usa para escribir texto al principio
             x = sp.Symbol('x') #convierte a x en una variable matematica
             expr = sp.sympify(fx) #convierte el texto fx en una expresion
             evaluacion_fx = expr.subs(x, sp.sympify(h)) #evaluacion de la funcion para saber si calcular los laterales
             lim_izq = sp.limit(expr, x, h, '-') #calcular limite cuando se hacerque por -
             lim_der = sp.limit(expr, x, h, '+') #calcular limite cuando se hacerque por +
-            h_num = float(sp.sympify(h))
+            h_numero = float(sp.sympify(h))
 
-            try: # es número normal, el límite existe
+            puntos_x = [] #lista para guardar los valores de x
+            puntos_y = [] #lista para guardar los valores de f(x)
+
+            evaluaciones = 200 #cantidad de puntos a calcular
+            rango_min = h_numero - 5 #inicio del grafico (5 unidades antes de h)
+            rango_max = h_numero + 5 #fin del grafico (5 unidades despues de h)
+            c_evaluaciones = (rango_max - rango_min) / evaluaciones #espacio entre cada punto
+
+            for i in range(evaluaciones): #recorre los 200 puntos
+                valor_x = rango_min + (i * c_evaluaciones) #calcula el valor de x para este punto
+                try:
+                    valor_y = float(expr.subs(x, valor_x).evalf()) #evalua f(x) en ese punto
+                    if abs(valor_y) < 1000: #evita valores muy grandes que distorsionen el grafico
+                        puntos_x.append(valor_x) #guarda el valor de x
+                        puntos_y.append(valor_y) #guarda el valor de f(x)
+                except:
+                    continue #si hay error en un punto, salta y sigue con el siguiente
+            
+            self.ax_lat.clear()
+            self.ax_lat.plot(puntos_x, puntos_y, label=f"f(x) = {fx}", color="#1500ff", linewidth=2)
+            self.ax_lat.axhline(0, color='white', linewidth=0.5)
+            self.ax_lat.axvline(0, color='white', linewidth=0.5)
+            self.ax_lat.grid(True, linestyle=':', color='gray', alpha=0.5)
+            self.ax_lat.legend(loc="upper right")
+            self.canvas_lat.draw()
+
+            try: #es número normal, el límite existe
                 verifi = float(evaluacion_fx) #verificador de indeterminacion(la indeterminacion no puede ser float)
-                self.resultado_lateral.delete("1.0", "end")
-                self.resultado_lateral.insert("1.0", "el limite se encuentra en: " + str(evaluacion_fx))
+                if verifi != verifi:  # nan es el único número que no es igual a sí mismo
+                    raise ValueError("nan")
+
+                texto = f"1. Función ingresada: f(x) = {fx}\n" 
+                texto += f"2. X tiende a: {h}\n"
+                texto += f"3. Evaluación directa f({h}) = {evaluacion_fx}\n"
+                texto += f"4. La función está definida en h\n"
+                texto += f"5. El límite existe en: {evaluacion_fx}"
+                self.mostrar_texto(self.resultado_lateral, texto)
+
+                if evaluacion_fx.is_number:
+                    valor_y_limite = float(evaluacion_fx.evalf())
+                    self.ax_lat.plot(h_numero, valor_y_limite, 'ro', markersize=8, label=f"Límite = {evaluacion_fx}")
+                    self.ax_lat.axhline(valor_y_limite, color='gray', linestyle='--', linewidth=0.7)
+                    self.ax_lat.axvline(h_numero, color='gray', linestyle='--', linewidth=0.7)
+                    self.canvas_lat.draw()
 
             except: #hay indeterminación o división por cero, calcular laterales
+
+                numerador = sp.numer(evaluacion_fx) #ve cual es el nummerador de la evaluacion de fx
+                tipo_indet = "0/0" if numerador == 0 else "k/0" #identifica que tipo de Indeterminacion es
+
                 if lim_der == lim_izq: # verifica si los limites laterales son iguales
-                    self.resultado_lateral.delete("1.0", "end")
-                    self.resultado_lateral.insert("1.0", "el limite se encuentra en: " + str(lim_der))
-                    # si los laterales son iguales es igual existe en el numero lim_der(ya que son iguales no hay problema)
+                    texto = f"1. Función ingresada: f(x) = {fx}\n"
+                    texto += f"2. X tiende a: {h}\n"
+                    texto += f"3. Evaluación directa: indeterminación detectada ({tipo_indet})\n"
+                    texto += f"4. Límite por izquierda (x → {h}⁻): {lim_izq}\n"
+                    texto += f"5. Límite por derecha (x → {h}⁺): {lim_der}\n"
+                    texto += f"6. L⁻ = L⁺ → El límite existe en: {lim_der}"
+                    self.mostrar_texto(self.resultado_lateral, texto)
+                    #si los laterales son iguales es igual existe en el numero lim_der(ya que son iguales no hay problema)
+
+                    if lim_der.is_number:
+                        valor_y_limite = float(lim_der.evalf())
+                        self.ax_lat.plot(h_numero, valor_y_limite, 'ro', markersize=8, label=f"Límite = {lim_der}")
+                        self.ax_lat.axhline(valor_y_limite, color='gray', linestyle='--', linewidth=0.7)
+                        self.ax_lat.axvline(h_numero, color='gray', linestyle='--', linewidth=0.7)
+                        self.canvas_lat.draw()
 
                 else: #si los limites laterales no son iguales
-                    self.resultado_lateral.delete("1.0", "end")
-                    self.resultado_lateral.insert("1.0", "el limite no existe")
-                    self.resultado_lateral.insert("end", "\nlimite por la derecha: " + str(lim_der))
-                    self.resultado_lateral.insert("end", "\nlimite por la izquierda: " + str(lim_izq))
-                    # "end" al principio se usa para agregar al final
+                    texto = f"1. Función ingresada: f(x) = {fx}\n"
+                    texto += f"2. X tiende a: {h}\n"
+                    texto += f"3. Evaluación directa: indeterminación detectada ({tipo_indet})\n"
+                    texto += f"4. Límite por izquierda (x → {h}⁻): {lim_izq}\n"
+                    texto += f"5. Límite por derecha (x → {h}⁺): {lim_der}\n"
+                    texto += f"6. L⁻ ≠ L⁺ → El límite no existe"
+                    self.mostrar_texto(self.resultado_lateral, texto)
+                    #"end" al principio se usa para agregar al final
+
         except Exception as error:
-            self.resultado_lateral.delete("1.0", "end")
-            self.resultado_lateral.insert("1.0", "Error en los datos ingresados:\n" + str(error))
+            self.mostrar_texto(self.resultado_lateral, "Error en los datos ingresados:\n" + str(error))
+
 #======================================
 #LIMITE INFINITO
 #======================================
+
+    def crear_infinito(self):
+        contenedor = ctk.CTkFrame(self.tab_infinito)
+        contenedor.pack(fill="both", expand=True, padx=10, pady=10)
+
+        menu_datos = ctk.CTkFrame(contenedor, width=200, height=200)
+        menu_datos.pack(side="bottom", fill="both", padx=10, pady=10)
+
+        grafica = ctk.CTkFrame(contenedor)
+        grafica.pack(side="top", fill="both", expand=True)
+
+        ctk.CTkLabel(menu_datos, text="limites al infinito", font=("arial", 22, "bold")).pack(pady=5)
+
+        ctk.CTkLabel(menu_datos, text="tendencia (∞ o -∞):").pack()
+        self.x_inf = ctk.CTkEntry(menu_datos, placeholder_text="oo o -oo")
+        self.x_inf.pack(pady=5)
+
+        ctk.CTkLabel(menu_datos, text="f(x):").pack()
+        self.fx_inf = ctk.CTkEntry(menu_datos, placeholder_text="Ej: (2*x)/x")
+        self.fx_inf.pack(pady=5)
+
+        ctk.CTkLabel(menu_datos, text="Explicación:").pack(pady=2)
+        self.caja_explicacion_inf = ctk.CTkTextbox(menu_datos, width=700, height=80, font=("arial", 13))
+        self.caja_explicacion_inf.pack(pady=5)
+        self.caja_explicacion_inf.configure(state="disabled")
+
+        self.figura_inf, self.eje_inf, self.canvas_inf = self.crea_grafico(grafica)
+
+        ctk.CTkButton(
+            menu_datos,
+            text="calcular y graficar",
+            command=self.graficar_infinito
+        ).pack(pady=10)
+
+    def graficar_infinito(self):
+        try:
+            # Captura de datos desde la interfaz
+            tendencia = self.x_inf.get() #Rescata el texto de la tendencia (oo o -oo)
+            funcion = self.fx_inf.get() #rescata el string de la funcion ingresada
+
+            #Validacion de datos incompletos 
+            if not tendencia or not funcion: 
+                self.mostrar_texto(self.caja_explicacion_inf, "ingresa los datos.")
+                return #corta la ejecucion si falta alfun dato
+            x = sp.symbols('x')#Define 'x' como la variable simbolica pra el calculo
+
+            #traducimos la entrada de texto al objeto infinito de SymPy
+            if tendencia == "oo":
+                tendencia_trad = sp.oo #asigna el objeto de infinito poitivo "es una dolbe 'o'"
+            elif tendencia == "-oo":
+                tendencia_trad = -sp.oo # se asigna el mismo objeto pero con un "-" antes
+            else: 
+                #si el usuario escribe cyalquier otra cosa, avisa del error y detiene el proceso
+                self.mostrar_texto(self.caja_explicacion_inf, "Para infinito usa exactamente 'oo' o '-oo'.")
+                return
+            fx = sp.sympify(funcion) #traduce el string de la funcion a una exprecion matematica
+            resultado = sp.limit(fx, x, tendencia_trad) # calcula el limite exacto
+
+            # Graficamos un rango amplio fijo (de -50 a 50) para apreciar el comportamiento asintotico 
+            puntos_x = []
+            puntos_y = []
+            for i in range(-50,51):
+                try:
+                    valor_y = float(fx.subs(x, i).evalf()) # Remplaza 'x' por el valor de 'i' y lo evalua decimal
+                    if abs(valor_y) < 100: #acota los valores para evitar desbordes por asintotas verticales 
+                        puntos_x.append(i) #guarda el valor en x si pasa el flitro
+                        puntos_y.append(valor_y) #guarda el valor calculado de y
+                except:
+                    continue # si hay una division por cero en ese punto, ignora el error y salta al siguiente 
+                # Renderiza el grafico en matplotlib
+            self.eje_inf.clear()
+            self.eje_inf.plot(puntos_x, puntos_y, label=f"f(x) = {funcion}", color="#1500ff",linewidth=2) # Dibuja la curva principar de la funcion uniendo los puntos con una linea azul
+
+            # si el limite da un numero estable, se dibuja la asintota horizontal
+            if resultado.is_number:
+                asintota = float(resultado.evalf()) #convierte el resultado del el limite a un valor decimal flotante 
+                self.eje_inf.axhline(asintota, color='red', linestyle=':', label=f"Asintota y = {resultado}") # traza una linea horiontal punteada de color rojo en el valor donde convegue la funcion
+
+            self.eje_inf.axhline(0, color='white', linewidth=0.5) #dibuja el eje x
+            self.eje_inf.axvline(0, color='white', linewidth=0.5) #dibuja el eje y
+            self.eje_inf.grid(True, linestyle=':', color='gray', alpha=0.5)# activa una cuadricula gris 
+            self.eje_inf.legend(loc="upper right") #coloca el cuadro de etiquetas/leyendas arriba a la derecha 
+            self.canvas_inf.draw() #refresca fisicamente el liezo de la interfaz grafica
+
+            #envia el resultado textual de la operacion limpia a la caja de texto
+            self.mostrar_texto(self.caja_explicacion_inf, f"Analizando comportamiento en tendencias extremas hacia {tendencia}. \nResultado del limite:{resultado}")
+        except Exception as error:
+            #si el usuario ingresa un error de sintaxisa se captura la exepcion y la muestra 
+            self.mostrar_texto(self.caja_explicacion_inf, f"Error:\n{str(error)}")
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()
