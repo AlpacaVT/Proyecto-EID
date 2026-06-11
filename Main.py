@@ -435,6 +435,8 @@ se desarrollo esta aplicacion esta diseñada para :
             #si el usuario ingresa un error de sintaxisa se captura la exepcion y la muestra 
             self.mostrar_texto(self.caja_explicacion_inf, f"Error:\n{str(error)}")
 
+
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+
