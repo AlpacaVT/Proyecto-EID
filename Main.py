@@ -28,8 +28,6 @@ class App(ctk.CTk):
         # Creación de pestañas.
         self.tab_inicio = self.tabs.add("Inicio")
         self.tab_limite = self.tabs.add("Limite")
-        self.tab_lateral = self.tabs.add("L. Lateral")
-        self.tab_infinito = self.tabs.add("L. Infinito")
 
         # Llamamos a los métodos que construyen cada pestaña.
         self.crear_inicio()
