@@ -1,7 +1,15 @@
 # Proyecto-IDE
-Este proyecto tiene como objetivo crear una interfaz que permita evaluar y graficar limites
+ola k tal
 
-# Integrantes
+# limites y limites al infinito
+Este proyecto tiene como objetivo crear una interfaz grafica que permita evaluar y graficar
+
+# Integrantes:
 • Vicente Huilcaman\
 • Javier Gutierrez\
-• Juan ramos
+• Juan Ramos
+<br>
+# Restricciones: 
+◇ Solo se pueden usar las librerias indicadas en las instrucciones del proyecto\
+◇ No utilizar el modulo Numpy\
+◇ No utilizar la funcion sp.limit
