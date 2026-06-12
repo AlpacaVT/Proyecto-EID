@@ -35,7 +35,7 @@ class App(ctk.CTk):
         self.crear_inicio()
         self.crear_limite()
         self.crear_lateral()
-        # self.crear_infinito()
+        self.crear_infinito()
 
     # ========================================================
     # PESTAÑA DE INICIO
@@ -160,66 +160,103 @@ class App(ctk.CTk):
             expresion = sp.sympify(str_fx)
             
             # Convertir el valor h a flotante
-            h = float(sp.sympify(str_h).evalf())
+            es_infinito_pos = (str_h.strip() == "oo")
+            es_infinito_neg = (str_h.strip() == "-oo")
+            es_infinito = es_infinito_pos or es_infinito_neg
 
-            # DESARROLLO ALGORÍTMICO
-            self.txt_resultado.insert("end", f"Evaluando entorno alrededor de h = {h}\n")
-            self.txt_resultado.insert("end", f"{'Dirección':<12} | {'x':<12} | {'f(x)':<15}\n")
-            self.txt_resultado.insert("end", "-" * 48 + "\n")
-
-            # Definimos distancias cercanas h (10^-1, 10^-2, 10^-3, ...) 
-            distancias = [0.1, 0.01, 0.001, 0.0001, 0.00001]
-            
-            limite_izq = None
-            limite_der = None
-
-            # Evaluacion por la izquierda (x -> h-)
-            for d in distancias:
-                x_eval = h - d
-                # Se usa subs solo para sustituir :V y evalf para aproximar
-                y_eval = expresion.subs(x, x_eval).evalf()
-                limite_izq = float(y_eval)
-                self.txt_resultado.insert("end", f"Izquierda (-) | {x_eval:<12.5f} | {limite_izq:<15.6f}\n")
-
-            self.txt_resultado.insert("end", "-" * 48 + "\n")
-
-            # Evaluacion por la derecha (x -> h+)
-            for d in distancias:
-                x_eval = h + d
-                y_eval = expresion.subs(x, x_eval).evalf()
-                limite_der = float(y_eval)
-                self.txt_resultado.insert("end", f"Derecha   (+) | {x_eval:<12.5f} | {limite_der:<15.6f}\n")
-
-            # 3. Validación lógica del Límite 
-            # Si la diferencia entre aproximarse por izquierda y derecha es minúscula, el límite existe 
-            if abs(limite_izq - limite_der) < 1e-4:
-                # Redondeamos el resultado para mostrar el entero o valor representativo
-                L = round(limite_izq, 4)
-                self.resultado_final.configure(text=f"Límite L = {L}", text_color="#22c55e") # Verde éxito
+            if es_infinito:
+                # Si tiende al infinito, x toma valores cada vez más grandes en magnitud
+                pasos_infinitos = [10, 100, 1000, 10000, 100000]
+                h_imprimible = "+oo" if es_infinito_pos else "-oo"
+                self.txt_resultado.insert("end", f"Evaluando tendencia hacia h = {h_imprimible}\n")
+                self.txt_resultado.insert("end", f"{'Dirección':<12} | {'x':<12} | {'f(x)':<15}\n")
+                self.txt_resultado.insert("end", "-" * 48 + "\n")
+                
+                limite_final = None
+                for paso in pasos_infinitos:
+                    # Si es -oo, multiplicamos por -1 para ir hacia la izquierda en el eje X
+                    x_eval = paso if es_infinito_pos else -paso
+                    y_eval = expresion.subs(x, x_eval).evalf()
+                    limite_final = float(y_eval)
+                    
+                    dir_texto = "Tendencia (+)" if es_infinito_pos else "Tendencia (-)"
+                    self.txt_resultado.insert("end", f"{dir_texto:<12} | {x_eval:<12} | {limite_final:<15.6f}\n")
+                
+                # Asumimos que el último valor de la secuencia es el límite L
+                L = round(limite_final, 4)
+                self.resultado_final.configure(text=f"Límite L = {L}", text_color="#22c55e")
             else:
-                self.resultado_final.configure(text="El límite No Existe (L. Laterales distintos)", text_color="orange")
+                h = float(sp.sympify(str_h).evalf())
+
+                # DESARROLLO ALGORÍTMICO
+                
+                self.txt_resultado.insert("end", f"Evaluando entorno alrededor de h = {h}\n")
+                self.txt_resultado.insert("end", f"{'Dirección':<12} | {'x':<12} | {'f(x)':<15}\n")
+                self.txt_resultado.insert("end", "-" * 48 + "\n")
+
+                # Definimos distancias cercanas h (10^-1, 10^-2, 10^-3, ...) 
+                distancias = [0.1, 0.01, 0.001, 0.0001, 0.00001]
+                
+                limite_izq = None
+                limite_der = None
+
+                # Evaluacion por la izquierda (x -> h-)
+                for d in distancias:
+                    x_eval = h - d
+                    # Se usa subs solo para sustituir :V y evalf para aproximar
+                    y_eval = expresion.subs(x, x_eval).evalf()
+                    limite_izq = float(y_eval)
+                    self.txt_resultado.insert("end", f"Izquierda (-) | {x_eval:<12.5f} | {limite_izq:<15.6f}\n")
+
+                self.txt_resultado.insert("end", "-" * 48 + "\n")
+
+                # Evaluacion por la derecha (x -> h+)
+                for d in distancias:
+                    x_eval = h + d
+                    y_eval = expresion.subs(x, x_eval).evalf()
+                    limite_der = float(y_eval)
+                    self.txt_resultado.insert("end", f"Derecha   (+) | {x_eval:<12.5f} | {limite_der:<15.6f}\n")
+
+                # 3. Validación lógica del Límite 
+                # Si la diferencia entre aproximarse por izquierda y derecha es minúscula, el límite existe 
+                if abs(limite_izq - limite_der) < 1e-4:
+                    # Redondeamos el resultado para mostrar el entero o valor representativo
+                    L = round(limite_izq, 4)
+                    self.resultado_final.configure(text=f"Límite L = {L}", text_color="#22c55e") # Verde éxito
+                else:
+                    self.resultado_final.configure(text="El límite No Existe (L. Laterales distintos)", text_color="orange")
 
             # carga la grafica
             self.eje.clear() # Limpia el gráfico anterior
             self.eje.set_facecolor('#1a1a1a') # Mantiene el tema oscuro
 
-            # Genera un rango de x con listas nativas en un entorno de [h - 4, h + 4]
+            # Genera un rango de x con listas nativas en un entorno a [h - 4, h + 4]
             puntos_x = []
             puntos_y = []
             pasos = 200
-            inicio_rango = h - 10
-            fin_rango = h + 10
+            # Cambia el rango de X
+            if es_infinito:
+                if es_infinito_pos:
+                    inicio_rango = 0
+                    fin_rango = 100  # Muestra el comportamiento hacia la derecha de la gráfica
+                else:
+                    inicio_rango = -100 # Muestra el comportamiento hacia la izquierda de la gráfica
+                    fin_rango = 0
+            else:
+                inicio_rango = h - 10
+                fin_rango = h + 10
+
             ancho_paso = (fin_rango - inicio_rango) / pasos
 
             # ciclo para calcular las cordenadas
             for i in range(pasos + 1):
                 cur_x = inicio_rango + (i * ancho_paso)
                 # se evita evaluar directameente
-                if abs(cur_x - h) < 1e-6:
+                if not es_infinito and abs(cur_x - h) < 1e-6:
                     continue
                 try:
                     cur_y = float(expresion.subs(x, cur_x).evalf())
-                    # Controlamos que no se grafiquen valores infinitos que rompan la escala
+                    # Controlamos que no se grafiquen valores infinitos que rompan el tamaño
                     if abs(cur_y) < 1000:
                         puntos_x.append(cur_x)
                         puntos_y.append(cur_y)
@@ -228,9 +265,13 @@ class App(ctk.CTk):
 
             # Grafica
             self.eje.plot(puntos_x, puntos_y, color='#1f77b4', linewidth=2.5, label=f"f(x) = {str_fx}")
-            
-            # Remarcar punto h en el eje X
-            self.eje.axvline(x=h, color='red', linestyle='--', alpha=0.6, label=f"x = {h}")
+
+            if es_infinito:
+                # Si el límite al infinito existe, dibuja una asíntota horizontal en Y = L
+                self.eje.axhline(y=0, color='red', linestyle='--', alpha=0.6, label=f"Asín. Horiz. y = {L}")
+            else:
+                # Remarca el punto h en el eje X
+                self.eje.axvline(x=h, color='red', linestyle='--', alpha=0.6, label=f"x = {h}")
             
             # Configuraciones de estilo para el gráfico
             self.eje.grid(True, color='#444444', linestyle=':')
@@ -241,11 +282,11 @@ class App(ctk.CTk):
             self.canvas.draw()
 
         except Exception as err:
-            # Captura de errores de sintaxis matemática o división imprevista 
+            # en caso de error
             self.resultado_final.configure(text="error de cálculo", text_color="red")
             self.txt_resultado.insert("end", f"\n[ERROR]: {str(err)}\nRevise que ingreso datos correctos (ej: 2*x en vez de 2x).")
         
-        # Deshabilitar caja para que el usuario no edite los números generados
+        # Deshabilita la caja para que el usuario no edite los números generados
         self.txt_resultado.configure(state="disabled")
 
 #======================================
@@ -394,12 +435,6 @@ class App(ctk.CTk):
 #======================================
 #LIMITE INFINITO
 #======================================
-
-<<<<<<< HEAD
-if __name__ == "__main__":
-    app = App()
-    app.mainloop()
-=======
     def crear_infinito(self):
         contenedor = ctk.CTkFrame(self.tab_infinito)
         contenedor.pack(fill="both", expand=True, padx=10, pady=10)
@@ -494,4 +529,5 @@ if __name__ == "__main__":
     app = App()
     app.mainloop()
 
->>>>>>> 7f5571878cdf88279af7aeebb04a2aa0cd24f03d
+
+
