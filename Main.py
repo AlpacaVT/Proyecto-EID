@@ -34,8 +34,6 @@ class App(ctk.CTk):
         # Llamamos a los métodos que construyen cada pestaña.
         self.crear_inicio()
         self.crear_limite()
-        self.crear_lateral()
-        self.crear_infinito()
 
     # ========================================================
     # PESTAÑA DE INICIO
