@@ -60,7 +60,7 @@ class App(ctk.CTk):
             ✔ Graficar la función\n
             ✔ Mostrar el resultado"""
 
-        caja = ctk.CTkTextbox(self.tab_inicio, width=900, height=350, font=("Arial", 16))
+        caja = ctk.CTkTextbox(self.tab_inicio, width=900, height=600, font=("Arial", 16))
         caja.pack(pady=20)
         caja.insert("1.0", texto)
         caja.configure(state="disabled")
