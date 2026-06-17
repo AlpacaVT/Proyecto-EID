@@ -211,11 +211,10 @@ class App(ctk.CTk):
                     y_eval = expresion.subs(x, x_eval).evalf()
                     limite_der = float(y_eval)
                     self.txt_resultado.insert("end", f"Derecha   (+) | {x_eval:<12.5f} | {limite_der:<15.6f}\n")
-
-                # 3. Validación lógica del Límite 
+                    
                 # Si la diferencia entre aproximarse por izquierda y derecha es minúscula, el límite existe 
                 if abs(limite_izq - limite_der) < 1e-4:
-                    # Redondeamos el resultado para mostrar el entero o valor representativo
+                    # Redondeamos el resultado para mostrar el entero o  valor mas cercano
                     L = round(limite_izq, 4)
                     self.resultado_final.configure(text=f"Límite L = {L}", text_color="#22c55e") # Verde éxito
                 else:
